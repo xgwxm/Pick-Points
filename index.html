@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>602班随机点名及小组积分系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --leader-color: #FFD700;
+            --subleader-color: #C0C0C0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 10px 5px;
+            background-color: #1a1a2e;
+            color: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin: 0;
+            padding: 15px 0;
+            color: white;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+            position: relative;
+            display: inline-block;
+        }
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            border-radius: 3px;
+        }
+        .header-edit {
+            background: rgba(255,255,255,0.1);
+            border: 1px dashed rgba(255,255,255,0.3);
+            color: white;
+            /* 调整内边距，让图标显示更合适 */
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .header-edit:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 98vw;
+            margin: 0 auto;
+            padding: 0 5px;
+        }
+        .top-section {
+            display: flex;
+            gap: 15px;
+        }
+        .random-call {
+            flex: 2;
+            background: linear-gradient(145deg, #16213e, #0f3460);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .scoreboard {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+        }
+        .rank-column {
+            flex: 1;
+            background: linear-gradient(145deg, #16213e, #0f3460);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .bottom-section {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 12px;
+        }
+        .group-card {
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .group-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 6px;
+        }
+        .group-score {
+            font-size: 18px;
+            text-align: center;
+            margin: 8px 0;
+            font-weight: bold;
+            color: white;
+        }
+        .students-horizontal {
+            display: block; 
+            margin-top: 8px;
+        }
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            /* 科技感渐变背景 */
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1)); 
+            min-width: 65px;
+            gap: 8px;
+            margin-bottom: 8px;
+            /* 添加发光效果 */
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3); 
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease; /* 添加过渡效果 */
+        }
+        .student-item:hover {
+            /* 鼠标悬停时放大并增强发光效果 */
+            transform: scale(1.03); 
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.6);
+        }
+        .student-name {
+            flex-grow: 1;
+            font-size: 24px;
+            /* 文字阴影效果 */
+            text-shadow: 0 0 5px rgba(52, 152, 219, 0.5); 
+        }
+        .leader {
+            color: #FFD700;
+            font-weight: bold;
+            /* 组长角色的特殊发光效果 */
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); 
+        }
+        .sub-leader {
+            color: #07e96d;
+            font-weight: bold;
+            /* 副组长角色的特殊发光效果 */
+            text-shadow: 0 0 10px rgba(192, 192, 192, 0.8); 
+        }
+        .minus-btn,
+        .plus-btn {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            /* 按钮的科技感渐变背景 */
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(46, 204, 113, 0.8)); 
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            transition: all 0.3s ease;
+        }
+        .minus-btn:hover,
+        .plus-btn:hover {
+            /* 鼠标悬停时按钮增强发光效果 */
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.8); 
+            transform: translateY(-1px);
+        }
+        .score-value {
+            min-width: 20px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            /* 分数的文字阴影效果 */
+            text-shadow: 0 0 5px rgba(52, 152, 219, 0.5); 
+        }
+        button {
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+        }
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+        /* ... 已有代码 ... */
+        #exportBtn { 
+            /* 设置导出按钮的渐变背景色 */
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        #nameDisplay {
+            font-size: 158px;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none; 
+            border: none; 
+            animation: none; 
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+            line-height: 1.2; 
+        }
+        .modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #16213e, #0f3460);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 300px;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 95%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-content button {
+            width: auto;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+
+        
+/* ... 已有代码 ... */
+        .rank-list {
+            list-style-type: none;
+            padding: 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin: 4px 0;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 13px;
+        }
+        .top-rank {
+            color: var(--secondary-color);
+            background: linear-gradient(90deg, rgba(46, 204, 113, 0.1), transparent);
+            border-left: 3px solid var(--secondary-color);
+        }
+        .bottom-rank {
+            color: var(--danger-color);
+            background: linear-gradient(90deg, rgba(231, 76, 60, 0.1), transparent);
+            border-left: 3px solid var(--danger-color);
+        }
+        .toggle-rank {
+            margin: 8px 0;
+            padding: 6px 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        /* 科技风背景色 */
+        .group-1 { background: linear-gradient(135deg, #3498db, #2c3e50); }
+        .group-2 { background: linear-gradient(135deg, #9b59b6, #34495e); }
+        .group-3 { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .group-4 { background: linear-gradient(135deg, #08e7de, #0abff3); }
+        .group-5 { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .group-6 { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .group-7 { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .group-8 { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .import-panel {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            display: none;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .import-panel textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 12px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 13px;
+        }
+        .import-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        #startBtn, #stopBtn, #importBtn {
+            padding: 8px 16px;
+            font-size: 13px;
+            min-width: 90px;
+        }
+        #startBtn { 
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+        #stopBtn { 
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+        #importBtn { 
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+        }
+        #confirmImport {
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+        #cancelImport {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+        .minus-btn {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+        .plus-btn {
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+        #speedControl {
+            width: 210px;
+            height: 6px;
+        }
+        .rank-column h2 {
+            /* 让标题文字居中显示 */
+            text-align: center;
+        }
+        .edit-title {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .edit-title input {
+            width: 250px;
+            padding: 8px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        #saveTitleBtn, #cancelEditTitleBtn {
+            padding: 6px 12px;
+            font-size: 13px;
+            min-width: 70px;
+            margin: 0 4px;
+        }
+        #saveTitleBtn { 
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+        #cancelEditTitleBtn { 
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        @media (max-width: 1200px) {
+            .bottom-section {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .top-section {
+                flex-direction: column;
+            }
+            .scoreboard {
+                flex-direction: column;
+            }
+            .bottom-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            #nameDisplay {
+                font-size: 28px;
+                min-height: 50px;
+            }
+        }
+        /* 滚动条整体样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        /* 滚动条轨道 */
+        ::-webkit-scrollbar-track {
+            background-color: #0f3460;
+            border-radius: 4px;
+        }
+
+        /* 滚动条滑块 */
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(46, 204, 113, 0.8));
+            border-radius: 4px;
+        }
+
+        /* 滚动条滑块悬停状态 */
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 1), rgba(46, 204, 113, 1));
+        }
+
+        </style>
+</head>
+<body>
+     <!-- 新增登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>登录</h2>
+            <input type="text" id="username" placeholder="用户名">
+            <input type="password" id="password" placeholder="密码">
+            <div class="modal-buttons">
+                <button id="loginBtn">登录</button>
+                <button id="cancelLoginBtn">取消</button>
+            </div>
+        </div>
+    </div>
+    <div class="header">
+        <h1 id="mainTitle">602班随机点名及小组积分系统</h1>
+        <button class="header-edit" id="editTitleBtn">
+            <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <div class="edit-title" id="editTitlePanel">
+            <input type="text" id="titleInput" value="602班随机点名及小组积分系统">
+            <button id="saveTitleBtn">保存</button>
+            <button id="cancelEditTitleBtn">取消</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="top-section">
+            <div class="random-call">
+                <h2>随机点名</h2>
+                <div id="nameDisplay">准备开始</div>
+                <div class="control-panel">
+                    <div class="control-buttons">
+                        <button id="startBtn">开始点名</button>
+                        <button id="stopBtn" disabled>停止</button>
+                        <button id="importBtn">导入学生</button>
+                        <button id="exportBtn">导出数据</button> <!-- 新增导出按钮 -->
+                    </div>
+                    <div class="import-panel" id="importPanel">
+                        <input type="file" id="importFile" accept=".json" style="margin-bottom: 10px;">
+                        <textarea id="studentListText" placeholder="请输入学生名单，每行一个学生姓名，格式：小组号,角色(leader/sub-leader/member),姓名&#10;例如：&#10;1,leader,张组长&#10;1,member,李同学&#10;2,sub-leader,王副组长"></textarea>
+                        <div class="import-buttons">
+                            <button id="confirmImport">确认导入</button>
+                            <button id="cancelImport">取消</button>
+                        </div>
+                    </div>
+                    <div class="speed-control">
+                        <label for="speedControl">速度:</label>
+                        <input type="range" id="speedControl" min="50" max="500" value="200">
+                        <span id="speedValue">中速</span>
+                    </div>
+                </div>
+                </div>
+                <div class="scoreboard">
+                    <div class="rank-column">
+                        <!-- 添加个人图标 -->
+                        <h2><i class="fa-solid fa-user"></i> 个人积分榜</h2> 
+                        <button class="toggle-rank" id="togglePersonalRank">显示后十名</button>
+                        <ul class="rank-list" id="personalRankList"></ul>
+                    </div>
+                    <div class="rank-column">
+                        <!-- 添加小组图标 -->
+                        <h2><i class="fa-solid fa-users"></i> 小组积分榜</h2> 
+                        <button class="toggle-rank" id="toggleGroupRank">显示后四名</button>
+                        <ul class="rank-list" id="groupRankList"></ul>
+                    </div>
+                </div>
+        </div>
+        <div class="bottom-section">
+            <!-- 8个小组卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 模拟用户数据，实际使用时可替换为从服务器获取
+        const users = [{ username: 'admin', password: 'admin123' }];
+        const loginModal = document.getElementById('loginModal');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+
+        // 隐藏系统内容，直到登录成功
+        const container = document.querySelector('.container');
+        const header = document.querySelector('.header');
+        container.style.display = 'none';
+        header.style.display = 'none';
+
+        // 登录验证函数
+        function login() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                loginModal.style.display = 'none';
+                container.style.display = 'flex';
+                header.style.display = 'block';
+                // 初始化页面
+                if (!loadData()) {
+                    calculateGroupScores();
+                }
+                initGroupCards();
+                updatePersonalRanking();
+                updateGroupRanking();
+            } else {
+                alert('用户名或密码错误，请重试！');
+            }
+        }
+        const cancelLoginBtn = document.getElementById('cancelLoginBtn');
+
+        // 取消登录函数
+        function cancelLogin() {
+            loginModal.style.display = 'none';
+            // 可以在这里添加其他退出逻辑，比如关闭页面等
+        }
+
+        cancelLoginBtn.addEventListener('click', cancelLogin);
+        loginBtn.addEventListener('click', login);
+
+        // 监听回车键触发登录
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && loginModal.style.display !== 'none') {
+                login();
+            }
+        });
+        // 初始数据
+        let groups = [
+            { 
+                id: 1, 
+                name: "第一组", 
+                score: 0,
+                students: [
+                    { name: "张组长", role: "leader", score: 30 },
+                    { name: "李副组长", role: "sub-leader", score: 25 },
+                    { name: "王同学", role: "member", score: 20 },
+                    { name: "赵同学", role: "member", score: 20 },
+                    { name: "钱同学", role: "member", score: 25 }
+                ]
+            },
+            { 
+                id: 2, 
+                name: "第二组", 
+                score: 0,
+                students: [
+                    { name: "孙组长", role: "leader", score: 28 },
+                    { name: "周副组长", role: "sub-leader", score: 22 },
+                    { name: "吴同学", role: "member", score: 20 },
+                    { name: "郑同学", role: "member", score: 20 },
+                    { name: "王同学", role: "member", score: 20 }
+                ]
+            },
+            { 
+                id: 3, 
+                name: "第三组", 
+                score: 0,
+                students: [
+                    { name: "冯组长", role: "leader", score: 25 },
+                    { name: "陈副组长", role: "sub-leader", score: 20 },
+                    { name: "褚同学", role: "member", score: 15 },
+                    { name: "卫同学", role: "member", score: 15 },
+                    { name: "蒋同学", role: "member", score: 20 }
+                ]
+            },
+            { 
+                id: 4, 
+                name: "第四组", 
+                score: 0,
+                students: [
+                    { name: "沈组长", role: "leader", score: 30 },
+                    { name: "韩副组长", role: "sub-leader", score: 20 },
+                    { name: "杨同学", role: "member", score: 15 },
+                    { name: "朱同学", role: "member", score: 20 },
+                    { name: "秦同学", role: "member", score: 20 }
+                ]
+            },
+            { 
+                id: 5, 
+                name: "第五组", 
+                score: 0,
+                students: [
+                    { name: "尤组长", role: "leader", score: 25 },
+                    { name: "许副组长", role: "sub-leader", score: 18 },
+                    { name: "何同学", role: "member", score: 15 },
+                    { name: "吕同学", role: "member", score: 15 },
+                    { name: "施同学", role: "member", score: 15 }
+                ]
+            },
+            { 
+            id: 6, 
+            name: "第六组", 
+            score: 0,
+            students: [
+                { name: "孔组长", role: "leader", score: 30 },
+                { name: "曹副组长", role: "sub-leader", score: 25 },
+                { name: "严同学", role: "member", score: 20 },
+                { name: "华同学", role: "member", score: 20 },
+                { name: "金同学", role: "member", score: 20 }
+            ]
+        },
+        { 
+            id: 7, 
+            name: "第七组", 
+            score: 0,
+            students: [
+                { name: "魏组长", role: "leader", score: 28 },
+                { name: "陶副组长", role: "sub-leader", score: 22 },
+                { name: "姜同学", role: "member", score: 15 },
+                { name: "戚同学", role: "member", score: 17 },
+                { name: "谢同学", role: "member", score: 20 }
+            ]
+        },
+        { 
+            id: 8, 
+            name: "第八组", 
+            score: 0,
+            students: [
+                { name: "苏组长", role: "leader", score: 25 },
+                { name: "潘副组长", role: "sub-leader", score: 20 },
+                { name: "葛同学", role: "member", score: 15 },
+                { name: "范同学", role: "member", score: 12 },
+                { name: "彭同学", role: "member", score: 20 }
+            ]
+        }
+    ];
+
+    // 计算小组总分
+    function calculateGroupScores() {
+        groups.forEach(group => {
+            group.score = group.students.reduce((sum, student) => sum + student.score, 0);
+        });
+    }
+
+    calculateGroupScores();
+
+    // 所有学生名单（用于随机点名）
+    let allStudents = [];
+    groups.forEach(group => {
+        group.students.forEach(student => {
+            allStudents.push({
+                name: student.name,
+                group: group.name,
+                role: student.role
+            });
+        });
+    });
+
+    // 随机点名相关变量
+    let timer = null;
+    let isRolling = false;
+    let currentSpeed = 200;
+    let showBottomRank = false;
+    let showBottomGroupRank = false;
+
+    // DOM元素
+    const mainTitle = document.getElementById('mainTitle');
+    const editTitleBtn = document.getElementById('editTitleBtn');
+    const editTitlePanel = document.getElementById('editTitlePanel');
+    const titleInput = document.getElementById('titleInput');
+    const saveTitleBtn = document.getElementById('saveTitleBtn');
+    const cancelEditTitleBtn = document.getElementById('cancelEditTitleBtn');
+    const nameDisplay = document.getElementById('nameDisplay');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importPanel = document.getElementById('importPanel');
+    const studentListText = document.getElementById('studentListText');
+    const confirmImport = document.getElementById('confirmImport');
+    const cancelImport = document.getElementById('cancelImport');
+    const speedControl = document.getElementById('speedControl');
+    const speedValue = document.getElementById('speedValue');
+    const personalRankList = document.getElementById('personalRankList');
+    const groupRankList = document.getElementById('groupRankList');
+    const togglePersonalRank = document.getElementById('togglePersonalRank');
+    const toggleGroupRank = document.getElementById('toggleGroupRank');
+    const bottomSection = document.querySelector('.bottom-section');
+    const exportBtn = document.getElementById('exportBtn');
+    const importFile = document.getElementById('importFile');
+
+
+
+    // 初始化小组卡片
+    function initGroupCards() {
+        bottomSection.innerHTML = '';
+        groups.forEach(group => {
+            const card = document.createElement('div');
+            card.className = `group-card group-${group.id}`;
+            
+            let studentsHTML = '';
+            group.students.forEach(student => {
+                studentsHTML += `
+                    <div class="student-item">
+                        <span class="student-name ${student.role}">${student.name}</span>
+                        <button class="minus-btn" data-group="${group.id}" data-student="${student.name}">-</button>
+                        <span class="score-value">${student.score}</span>
+                        <button class="plus-btn" data-group="${group.id}" data-student="${student.name}">+</button>
+                    </div>
+                `;
+            });
+            
+            card.innerHTML = `
+                <div class="group-title">${group.name}</div>
+                <div class="group-score">总分: ${group.score}</div>
+                <div class="students-horizontal">
+                    ${studentsHTML}
+                </div>
+            `;
+            
+            bottomSection.appendChild(card);
+        });
+        
+        // 添加加减分事件监听
+        document.querySelectorAll('.plus-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const groupId = parseInt(this.getAttribute('data-group'));
+                const studentName = this.getAttribute('data-student');
+                updateScore(groupId, studentName, 1);
+            });
+        });
+        
+        document.querySelectorAll('.minus-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const groupId = parseInt(this.getAttribute('data-group'));
+                const studentName = this.getAttribute('data-student');
+                updateScore(groupId, studentName, -1);
+            });
+        });
+    }
+
+    // 更新分数
+    function updateScore(groupId, studentName, change) {
+        const group = groups.find(g => g.id === groupId);
+        if (!group) return;
+        
+        const student = group.students.find(s => s.name === studentName);
+        if (!student) return;
+        
+        student.score += change;
+        calculateGroupScores();
+        
+        // 更新UI
+        initGroupCards();
+        updatePersonalRanking();
+        updateGroupRanking();
+        saveData();
+    }
+
+    // 获取所有学生按分数排序
+    function getAllStudentsSorted() {
+        let all = [];
+        groups.forEach(group => {
+            group.students.forEach(student => {
+                all.push({
+                    name: student.name,
+                    group: group.name,
+                    role: student.role,
+                    score: student.score
+                });
+            });
+        });
+        return all.sort((a, b) => b.score - a.score);
+    }
+
+    // 更新个人排行榜
+    function updatePersonalRanking() {
+        const sortedStudents = getAllStudentsSorted();
+        personalRankList.innerHTML = '';
+        
+        const displayStudents = showBottomRank 
+            ? sortedStudents.slice(-10).reverse() 
+            : sortedStudents.slice(0, 10);
+        
+        displayStudents.forEach((student, index) => {
+            const li = document.createElement('li');
+            li.className = `rank-item ${index < 3 && !showBottomRank ? 'top-rank' : ''} ${index >= displayStudents.length - 3 && showBottomRank ? 'bottom-rank' : ''}`;
+            
+            const rank = showBottomRank ? (allStudents.length - displayStudents.length + index + 1) : (index + 1);
+            li.innerHTML = `
+                <span>${rank}. ${student.name} (${student.group})</span>
+                <span>${student.score}分</span>
+            `;
+            
+            personalRankList.appendChild(li);
+        });
+    }
+
+    // 更新小组排行榜
+    function updateGroupRanking() {
+        const sortedGroups = [...groups].sort((a, b) => b.score - a.score);
+        groupRankList.innerHTML = '';
+        
+        const displayGroups = showBottomGroupRank 
+            ? sortedGroups.slice(-4).reverse() 
+            : sortedGroups.slice(0, 4);
+        
+        displayGroups.forEach((group, index) => {
+            const li = document.createElement('li');
+            li.className = `rank-item ${index < 2 && !showBottomGroupRank ? 'top-rank' : ''} ${index >= 2 && showBottomGroupRank ? 'bottom-rank' : ''}`;
+            
+            const rank = showBottomGroupRank ? (groups.length - displayGroups.length + index + 1) : (index + 1);
+            li.innerHTML = `
+                <span>${rank}. ${group.name}</span>
+                <span>${group.score}分</span>
+            `;
+            
+            groupRankList.appendChild(li);
+        });
+    }
+
+    // 随机点名函数
+    function rollName() {
+        if (allStudents.length === 0) {
+            clearInterval(timer);
+            isRolling = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            nameDisplay.textContent = "无学生名单";
+            return;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * allStudents.length);
+        const student = allStudents[randomIndex];
+        nameDisplay.innerHTML = `${student.name}`;
+    }
+
+    // 开始/停止点名
+    startBtn.addEventListener('click', function() {
+        if (allStudents.length === 0) {
+            alert('请先导入学生名单！');
+            return;
+        }
+        
+        isRolling = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        // 添加滚动特效类
+        nameDisplay.classList.add('rolling');
+        timer = setInterval(rollName, currentSpeed);
+    });
+
+    stopBtn.addEventListener('click', function() {
+        isRolling = false;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        clearInterval(timer);
+        // 移除滚动特效类
+        nameDisplay.classList.remove('rolling');
+        const currentText = nameDisplay.textContent;
+        const studentName = currentText.split('\n')[0];
+        const student = allStudents.find(s => s.name === studentName);
+        if (student) {
+            nameDisplay.innerHTML = `${student.name}(${student.group})`;
+        }
+    });
+
+    // 导入名单
+
+    
+    importBtn.addEventListener('click', function() {
+        importPanel.style.display = 'block';
+        studentListText.focus();
+    });
+
+    confirmImport.addEventListener('click', function() {
+        console.log('确认导入按钮已被点击');
+        const file = importFile.files[0];
+        const content = studentListText.value.trim();
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    groups = data.groups || [];
+                    allStudents = data.allStudents || [];
+                    if (data.title) {
+                        mainTitle.textContent = data.title;
+                        document.title = data.title;
+                    }
+
+                    // 修正函数调用
+                    calculateGroupScores();
+                    initGroupCards();
+                    updatePersonalRanking();
+                    updateGroupRanking();
+                    saveData();
+
+                    importPanel.style.display = 'none';
+                    importFile.value = '';
+                    alert(`成功导入 ${allStudents.length} 名学生！`);
+                } catch (error) {
+                    alert(`文件导入失败: ${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+        } else if (content) {
+            try {
+                // 清空现有数据
+                groups.forEach(group => {
+                    group.students = [];
+                    group.score = 0;
+                });
+                allStudents = [];
+
+                // 解析新数据
+                const lines = content.split('\n');
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+
+                    const parts = line.split(',');
+                    if (parts.length !== 3) {
+                        // 修正语法错误
+                        throw new Error(`错误: ${line}`);
+                    }
+
+                    const groupId = parseInt(parts[0].trim());
+                    const role = parts[1].trim();
+                    // 补全代码
+                    const name = parts[2].trim();
+
+                    if (groupId < 1 || groupId > 8) {
+                        throw new Error(`小组号必须在1-8之间: ${line}`);
+                    }
+
+                    if (!['leader', 'sub-leader', 'member'].includes(role)) {
+                        throw new Error(`角色必须是leader/sub-leader/member: ${line}`);
+                    }
+
+                    const group = groups.find(g => g.id === groupId);
+                    if (!group) {
+                        throw new Error(`找不到小组: ${groupId}`);
+                    }
+
+                    // 初始分数根据角色设置
+                    let initialScore = 0;
+                    if (role === 'leader') initialScore = 25;
+                    else if (role === 'sub-leader') initialScore = 20;
+                    else initialScore = 15;
+
+                    group.students.push({
+                        name: name,
+                        role: role,
+                        score: initialScore
+                    });
+
+                    allStudents.push({
+                        name: name,
+                        group: group.name,
+                        role: role
+                    });
+                });
+
+                // 计算小组总分
+                calculateGroupScores();
+
+                // 更新UI
+                initGroupCards();
+                updatePersonalRanking();
+                updateGroupRanking();
+                saveData();
+
+                importPanel.style.display = 'none';
+                studentListText.value = '';
+                alert(`成功导入 ${allStudents.length} 名学生！`);
+            } catch (error) {
+                alert(`文本导入失败: ${error.message}`);
+            }
+        } else {
+            alert('请选择文件或输入学生名单！');
+        }
+    });
+
+    // 取消导入
+    cancelImport.addEventListener('click', function() {
+        importPanel.style.display = 'none';
+        studentListText.value = '';
+    });
+
+    // 编辑标题
+    editTitleBtn.addEventListener('click', function() {
+        editTitlePanel.style.display = 'block';
+        titleInput.value = mainTitle.textContent;
+        titleInput.focus();
+    });
+
+    saveTitleBtn.addEventListener('click', function() {
+        const newTitle = titleInput.value.trim();
+        if (newTitle) {
+            mainTitle.textContent = newTitle;
+            document.title = newTitle;
+            editTitlePanel.style.display = 'none';
+            saveData();
+        }
+    });
+
+    cancelEditTitleBtn.addEventListener('click', function() {
+        editTitlePanel.style.display = 'none';
+    });
+
+    // 调整速度
+    speedControl.addEventListener('input', function() {
+        currentSpeed = 550 - this.value; // 反转值，使滑块右侧为快速
+        
+        if (currentSpeed < 100) {
+            speedValue.textContent = "快速";
+        } else if (currentSpeed < 300) {
+            speedValue.textContent = "中速";
+        } else {
+            speedValue.textContent = "慢速";
+        }
+        
+        if (isRolling) {
+            clearInterval(timer);
+            timer = setInterval(rollName, currentSpeed);
+        }
+    });
+
+    // 切换排行榜显示
+    togglePersonalRank.addEventListener('click', function() {
+        showBottomRank = !showBottomRank;
+        this.textContent = showBottomRank ? "显示前十名" : "显示后十名";
+        updatePersonalRanking();
+    });
+
+    toggleGroupRank.addEventListener('click', function() {
+        showBottomGroupRank = !showBottomGroupRank;
+        this.textContent = showBottomGroupRank ? "显示前四名" : "显示后四名";
+        updateGroupRanking();
+    });
+
+    // 保存数据到localStorage
+    function saveData() {
+        localStorage.setItem('classroomSystemData', JSON.stringify({
+            groups: groups,
+            allStudents: allStudents,
+            title: mainTitle.textContent
+        }));
+    }
+
+    // 从localStorage加载数据
+    function loadData() {
+        const savedData = localStorage.getItem('classroomSystemData');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                groups = data.groups;
+                allStudents = data.allStudents;
+                if (data.title) {
+                    mainTitle.textContent = data.title;
+                    document.title = data.title;
+                }
+                return true;
+            } catch (e) {
+                console.error('加载数据失败:', e);
+            }
+        }
+        return false;
+    }
+
+    function exportData() {
+        const dataToExport = {
+            groups: groups,
+            allStudents: allStudents,
+            title: mainTitle.textContent
+        };
+        const jsonData = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        // 获取当前时间
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+        // 文件名添加时间戳
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `classroomSystemData_${timestamp}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    exportBtn.addEventListener('click', exportData);
+
+    // 初始化页面
+    if (!loadData()) {
+        // 如果没有保存的数据，使用默认数据
+        calculateGroupScores();
+    }
+    initGroupCards();
+    updatePersonalRanking();
+    updateGroupRanking();
+</script>
+</body>
+</html>
